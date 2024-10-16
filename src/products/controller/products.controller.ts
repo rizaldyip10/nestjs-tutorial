@@ -7,12 +7,14 @@ import {
   Param,
   Delete,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
 import { ProductsService } from '../service/products.service';
 import { CreateProductDto } from '../dto/request/create-product.dto';
 import { UpdateProductDto } from '../dto/request/update-product.dto';
 import { Response } from 'src/utils/response.util';
 import { ProductDTO } from '../dto/product.dto';
+import { PaginationDTO } from 'src/utils/pagination.dto';
 
 @Controller('products')
 export class ProductsController {
@@ -29,11 +31,18 @@ export class ProductsController {
   }
 
   @Get()
-  async findAll() {
-    const response = (await this.productsService.findAll()).map(
-      (item) => new ProductDTO(item),
+  async findAll(@Query() paginationDTO: PaginationDTO) {
+    const { data, total, page, limit } =
+      await this.productsService.findAll(paginationDTO);
+    const response = data.map((item) => new ProductDTO(item));
+    return Response.pagination(
+      HttpStatus.OK,
+      'Product list fetched',
+      response,
+      total,
+      page,
+      limit,
     );
-    return Response.successful(HttpStatus.OK, 'Product list fetched', response);
   }
 
   @Get(':id')

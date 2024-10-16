@@ -37,4 +37,25 @@ export class Response<T> {
     response.data = data;
     return response;
   }
+
+  static pagination<T>(
+    statusCode: number,
+    statusMessage: string,
+    data: T[],
+    total: number,
+    page: number,
+    limit: number,
+  ) {
+    return {
+      statusCode,
+      statusMessage,
+      data,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
 }

@@ -12,6 +12,8 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Response } from 'src/utils/response.util';
 import { CategoriesService } from 'src/categories/service/categories.service';
+import { PaginationDTO } from 'src/utils/pagination.dto';
+import { DEFAULT_PAGE_SIZE } from 'src/utils/constant';
 
 @Injectable()
 export class ProductsService {
@@ -52,10 +54,18 @@ export class ProductsService {
     return this.productRepository.save(newProduct);
   }
 
-  findAll() {
-    return this.productRepository.find({
+  async findAll(paginationDTO: PaginationDTO) {
+    const page = Math.max(1, Number(paginationDTO.page) || 1);
+    const limit = Math.max(1, Number(paginationDTO.limit) || DEFAULT_PAGE_SIZE);
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await this.productRepository.findAndCount({
       relations: ['category'],
+      skip,
+      take: limit,
     });
+
+    return { data, total, page, limit };
   }
 
   async findOne(id: number) {
